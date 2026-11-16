@@ -1,0 +1,22 @@
+# build output
+app/target/
+app/dist/
+
+# tooling / agent session artifacts
+agent-session.jsonl
+build-activity.log
+craft.json
+feed.json
+usage.json
+inbox/
+capture/
+checks/
+investigation.cany/
+pinned/
+reference/
+reference-photos/
+
+# development screenshots (README ones are re-included below)
+app/shots/*
+!app/shots/d_home.png
+!app/shots/d_bible.png

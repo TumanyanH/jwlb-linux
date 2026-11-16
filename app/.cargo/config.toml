@@ -1,0 +1,8 @@
+# Build without a system C toolchain: Zig provides the C compiler and linker.
+[target.x86_64-unknown-linux-gnu]
+linker = "tools/zigcc"
+
+[env]
+CC_x86_64_unknown_linux_gnu = { value = "tools/zigcc", relative = true }
+AR_x86_64_unknown_linux_gnu = { value = "tools/zigar", relative = true }
+CXX_x86_64_unknown_linux_gnu = { value = "tools/zigcxx", relative = true }

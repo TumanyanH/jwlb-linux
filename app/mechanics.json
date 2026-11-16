@@ -1,0 +1,221 @@
+{
+ "version": 1,
+ "values": [
+  {
+   "name": "highlight colours",
+   "group": "personal study",
+   "value": 6,
+   "unit": "colours",
+   "source": "PrimaryPane.bundle.js notemarker-1..6"
+  },
+  {
+   "name": "highlight yellow (light)",
+   "group": "personal study",
+   "value": "#fff37a",
+   "source": "PrimaryPane.bundle.js notemarker-1"
+  },
+  {
+   "name": "highlight green (light)",
+   "group": "personal study",
+   "value": "#b7e492",
+   "source": "PrimaryPane.bundle.js notemarker-2"
+  },
+  {
+   "name": "highlight blue (light)",
+   "group": "personal study",
+   "value": "#98d8ff",
+   "source": "PrimaryPane.bundle.js notemarker-3"
+  },
+  {
+   "name": "highlight pink (light)",
+   "group": "personal study",
+   "value": "#f698bc",
+   "source": "PrimaryPane.bundle.js notemarker-4"
+  },
+  {
+   "name": "highlight orange (light)",
+   "group": "personal study",
+   "value": "#ffba8a",
+   "source": "PrimaryPane.bundle.js notemarker-5"
+  },
+  {
+   "name": "highlight purple (light)",
+   "group": "personal study",
+   "value": "#c1a7e2",
+   "source": "PrimaryPane.bundle.js notemarker-6"
+  },
+  {
+   "name": "bookmark slots per publication",
+   "group": "personal study",
+   "value": 10,
+   "source": "webapp images bookmark0..9, userData Bookmark.Slot"
+  },
+  {
+   "name": "highlight block type paragraph",
+   "group": "personal study",
+   "value": 1,
+   "source": "JWLibrary.dll 0x3fe3fdb BlockRange CHECK"
+  },
+  {
+   "name": "highlight block type verse",
+   "group": "personal study",
+   "value": 2,
+   "source": "JWLibrary.dll 0x3fe3fdb BlockRange CHECK"
+  },
+  {
+   "name": "backup file extension",
+   "group": "backup",
+   "value": ".jwlibrary",
+   "source": "JWLibrary.dll 0x2babb14"
+  },
+  {
+   "name": "accent colour",
+   "group": "look",
+   "value": "#4a6da7",
+   "source": "PrimaryPane.bundle.js jwac link colour"
+  },
+  {
+   "name": "bible books",
+   "group": "bible",
+   "value": 66,
+   "source": "mepsunit.db BibleBookGroup"
+  },
+  {
+   "name": "first greek scriptures book",
+   "group": "bible",
+   "value": 40,
+   "source": "mepsunit.db BibleInfo"
+  },
+  {
+   "name": "bible group tile colours",
+   "group": "look",
+   "value": "shades of #4a6da7",
+   "estimated": true
+  },
+  {
+   "name": "daily text dated class",
+   "group": "home",
+   "value": 4,
+   "source": "catalog.db DatedText"
+  },
+  {
+   "name": "meeting week dated classes",
+   "group": "meetings",
+   "value": "68, 106",
+   "source": "catalog.db DatedText"
+  },
+  {
+   "name": "teaching toolbox list",
+   "group": "home",
+   "value": 2,
+   "source": "catalog.db CuratedAsset.ListType"
+  },
+  {
+   "name": "catalog service",
+   "group": "library",
+   "value": "https://app.jw-cdn.org/catalogs/publications",
+   "source": "JWLibrary.dll 0x4c1cdee"
+  },
+  {
+   "name": "publication files service",
+   "group": "library",
+   "value": "/apis/pub-media/GETPUBMEDIALINKS",
+   "source": "JWLibrary.dll 0x4b2ccfc"
+  },
+  {
+   "name": "media categories service",
+   "group": "media",
+   "value": "/apis/mediator/v1/categories/",
+   "source": "JWLibrary.dll 0x4b8a9f0"
+  },
+  {
+   "name": "video quality default",
+   "group": "media",
+   "value": "720p",
+   "estimated": true
+  },
+  {
+   "name": "text size percentage default",
+   "group": "reader",
+   "value": 121,
+   "unit": "%",
+   "source": "function 0x185a824c0 (store at 0x185a82d8e), getter 0x186399b30"
+  },
+  {
+   "name": "base text size",
+   "group": "reader",
+   "value": 16,
+   "unit": "px",
+   "source": "PrimaryPane.bundle.js body{font-size:12pt}"
+  },
+  {
+   "name": "line height",
+   "group": "reader",
+   "value": 1.5,
+   "source": "PrimaryPane.bundle.js body{line-height:1.5}"
+  },
+  {
+   "name": "heading scale per step",
+   "group": "reader",
+   "value": 1.205,
+   "source": "PrimaryPane.bundle.js du-fontSize--basePlus1"
+  },
+  {
+   "name": "text size step",
+   "group": "reader",
+   "value": 10,
+   "unit": "%",
+   "estimated": true
+  },
+  {
+   "name": "text size range",
+   "group": "reader",
+   "value": "60-300%",
+   "estimated": true
+  },
+  {
+   "name": "default highlight colour index",
+   "group": "personal study",
+   "value": 0,
+   "source": "function 0x185a824c0 (store at 0x185a827eb)"
+  },
+  {
+   "name": "highlight picker order",
+   "group": "personal study",
+   "value": "Yellow 1, Green 2, Blue 3, Purple 6, Pink 4, Orange 5",
+   "source": "function 0x185e1dd40"
+  },
+  {
+   "name": "pub-media language parameter",
+   "group": "library",
+   "value": "langwritten (default univ)",
+   "source": "function 0x185ab2610"
+  },
+  {
+   "name": "catalog path (production)",
+   "group": "library",
+   "value": "/catalogs/publications",
+   "source": "function 0x186d16110"
+  },
+  {
+   "name": "skip back",
+   "group": "media",
+   "value": 5,
+   "unit": "s",
+   "source": "asset mediaplayer_skip_back_5"
+  },
+  {
+   "name": "skip forward",
+   "group": "media",
+   "value": 15,
+   "unit": "s",
+   "source": "asset mediaplayer_skip_forward_15"
+  },
+  {
+   "name": "playback speeds",
+   "group": "media",
+   "value": "0.5-2x",
+   "estimated": true
+  }
+ ]
+}

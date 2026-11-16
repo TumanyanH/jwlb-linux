@@ -1,0 +1,39 @@
+[package]
+name = "study-library"
+version = "1.0.0"
+edition = "2021"
+description = "Bible and publication reader for Linux"
+license = "MIT"
+
+[[bin]]
+name = "study-library"
+path = "src/main.rs"
+
+[dependencies]
+eframe = { version = "0.31", default-features = false, features = ["default_fonts", "glow", "wayland", "x11"] }
+egui = "0.31"
+ureq = { version = "2", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+zip = { version = "2", default-features = false, features = ["deflate"] }
+flate2 = "1"
+scraper = "0.20"
+roxmltree = "0.20"
+chrono = "0.4"
+dirs = "5"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+fastrand = "2"
+libloading = "0.8"
+openh264 = { version = "0.6", default-features = false, features = ["source"] }
+symphonia = { version = "0.5", default-features = false, features = ["mp3", "aac", "isomp4"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true
+codegen-units = 4
+
+# keep the video/sound decoders fast in test builds too
+[profile.dev.package."*"]
+opt-level = 2

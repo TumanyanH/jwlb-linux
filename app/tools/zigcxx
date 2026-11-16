@@ -1,0 +1,13 @@
+#!/bin/sh
+# C++ compiler for builds on machines without g++: uses Zig.
+ZIG="$(command -v zig 2>/dev/null || echo "$HOME/.cargo/bin/zig")"
+set -- "$@" _END_
+for a do
+  shift
+  case "$a" in
+    _END_) ;;
+    --target=*) ;;
+    *) set -- "$@" "$a" ;;
+  esac
+done
+exec "$ZIG" c++ -target x86_64-linux-gnu.2.17 "$@"

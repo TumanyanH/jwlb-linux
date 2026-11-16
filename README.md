@@ -45,7 +45,7 @@ The universal installer is a single file, so the same download works everywhere.
 
 ## 🚀 Install (recommended): universal installer
 
-1. **Get the installer** – `StudyLibrary-Installer.run` (from `app/dist/`, or build it yourself, see below).
+1. **Get the installer** – `StudyLibrary-Installer.run` from the [Releases page](../../releases/latest), or build it yourself (see below).
 
 2. **Open a terminal** in the folder that contains it and run:
 
@@ -134,7 +134,7 @@ rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
 ### 2. Get the code
 
 ```bash
-git clone <your-repository-url> study-library
+git clone https://github.com/TumanyanH/study-library.git
 cd study-library/app
 ```
 

@@ -134,8 +134,8 @@ rustup target add x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
 ### 2. Get the code
 
 ```bash
-git clone https://github.com/TumanyanH/study-library.git
-cd study-library/app
+git clone https://github.com/TumanyanH/jwlb-linux.git
+cd jwlb-linux/app
 ```
 
 ### 3a. Quick build and run (your own machine only)
@@ -205,4 +205,4 @@ This is an independent, unofficial project. It is not affiliated with, endorsed 
 
 ## 📄 License
 
-Source code released under the [MIT License](https://opensource.org/licenses/MIT).
+Source code released under the [MIT License](LICENSE) © Hakob Tumanyan.

@@ -1,7 +1,7 @@
 <div align="center">
 
 # 📖 Study Library for Linux
-
+## ⚙️ Still in progress
 **A fast, native Bible and publication reader that runs on any Linux distribution.**
 
 ![Platform](https://img.shields.io/badge/platform-Linux-blue?logo=linux&logoColor=white)

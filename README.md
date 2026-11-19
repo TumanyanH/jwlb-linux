@@ -10,7 +10,7 @@
 ![GUI](https://img.shields.io/badge/GUI-egui-8a63d2)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-<img src="app/shots/d_home.png" alt="Home screen" width="380">&nbsp;&nbsp;<img src="app/shots/d_bible.png" alt="Bible screen" width="380">
+<img src="app/shots/d_home.png" alt="Home screen" width="380">&nbsp;&nbsp;<img src="app/shots/d_bible.png" alt="Bible screen" width="380">&nbsp;&nbsp;<img src="app/shots/d_meetings.png" alt="Bible screen" width="380">
 
 </div>
 

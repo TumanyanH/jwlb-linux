@@ -74,10 +74,13 @@ git clone https://github.com/<you>/<repo>.git ~/study-library
 ln -s ~/study-library/server ~/study-library-server
 ```
 
-## 3½. Alternative: run it with Docker (replaces steps 4–6)
+## 3½. Alternative: run it with Docker (replaces steps 4–7)
 
-If you prefer Docker, skip steps 4, 5 and 6 and do this instead, then continue with step 7 (Caddy).
-You don't need Rust, the `studylib` user or the systemd unit. The image builds the server itself.
+If you prefer Docker, skip steps 4–7 and do this instead, then continue with step 8.
+`docker-compose.yml` runs two containers: the server, and Caddy in front of it for HTTPS.
+Caddy gets the Let's Encrypt certificate on first start and renews it by itself.
+You don't need Rust, the `studylib` user, the systemd unit or a Caddy install on the host.
+If Caddy is already installed on the host, stop it first (`sudo systemctl disable --now caddy`), because both need ports 80 and 443.
 
 Install Docker (official convenience script):
 
@@ -85,33 +88,36 @@ Install Docker (official convenience script):
 curl -fsSL https://get.docker.com | sudo sh
 ```
 
-Create the settings file next to `docker-compose.yml`. It holds passwords, so only you can read it:
+Create the two settings files next to `docker-compose.yml`:
 
 ```sh
 cd ~/study-library-server
-cp server.env.example server.env
-chmod 600 server.env
+cp server.env.example server.env && chmod 600 server.env
 nano server.env            # SMTP_* and GOOGLE_*; see the notes in step 5
+cp .env.example .env
+nano .env                  # DOMAIN=accounts.example.org, or 92-5-32-249.sslip.io without a domain
 ```
+
+Ports 80 and 443 must be open, including in the VPS provider's firewall panel. Docker publishes them past `ufw`.
 
 Build and start it:
 
 ```sh
 sudo docker compose up -d --build                 # first build takes a few minutes
-sudo docker compose ps                            # should say "healthy" after ~30 s
-curl -s http://127.0.0.1:5764/v1/config           # → {"google_client_id":null,"version":1}
-sudo docker compose logs -f                       # logs, including codes while email is not configured
+sudo docker compose ps                            # both containers "Up"; the server "healthy" after ~30 s
+curl -s https://accounts.example.org/v1/config    # → {"google_client_id":null,"version":1}
+sudo docker compose logs -f                       # logs of both; codes appear here while email is not configured
 ```
 
 How it fits together:
 
-- **Port:** inside the container the server listens on `0.0.0.0:5764`. `docker-compose.yml` publishes it only on the VPS's `127.0.0.1:5764`, so the Caddyfile in step 7 works unchanged and the port stays closed to the internet. Docker bypasses `ufw` for published ports, so keep the `127.0.0.1:` prefix.
-- **Data:** the SQLite database lives in the Docker volume `study-library-data`, mounted at `/data`. It survives rebuilds and restarts. `docker compose down -v` deletes it, so don't use `-v`.
-- **Restart:** the container starts again on reboot and after a crash (`restart: unless-stopped`).
+- **Ports:** only Caddy is public (80 and 443). The server's plain-HTTP port 5764 is published only on the VPS's `127.0.0.1`, for checks with `curl http://127.0.0.1:5764/v1/config`.
+- **Certificates:** stored in the `caddy-data` volume, so restarts and rebuilds don't request new ones. Renewal happens automatically about 30 days before expiry; nothing to schedule.
+- **Data:** the SQLite database lives in the volume `study-library-data`, mounted at `/data`. It survives rebuilds and restarts. `docker compose down -v` deletes all volumes, so never use `-v`.
+- **Restart:** the containers start again on reboot and after a crash (`restart: unless-stopped`).
 - **Updating:** copy the new code (step 3), then `sudo docker compose up -d --build`.
 - **Backup:** don't copy the database file while the server runs. Use SQLite's own backup instead, which writes `accounts-backup.db` into the current folder:
   `sudo docker run --rm -v study-library-server_study-library-data:/data -v "$PWD":/out debian:bookworm-slim sh -c 'apt-get update -qq && apt-get install -y -qq sqlite3 >/dev/null && sqlite3 /data/accounts.db ".backup /out/accounts-backup.db"'`
-  (`docker-compose.yml` names the project `study-library-server`, so the volume is always `study-library-server_study-library-data`.)
 
 ## 4. Build it on the VPS
 
@@ -351,7 +357,7 @@ The server already slows down password guessing on its own:
 - Each client address may make 30 requests per 10 minutes to the sign-in, sign-up, code and password-reset endpoints. After that, the app shows "Too many attempts".
 - Each emailed code allows 5 tries.
 
-The client address comes from the `X-Forwarded-For` header that Caddy adds. This is why the server must listen only on `127.0.0.1` behind Caddy, as configured above. Never expose port 5764 directly.
+The client address comes from the `X-Forwarded-For` header that Caddy adds. The server trusts that header only when the connection comes from a loopback or private address (a proxy on the same machine, or the Caddy container); a client connecting directly is counted by its own address.
 
 ## Troubleshooting
 

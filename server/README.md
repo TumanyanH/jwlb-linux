@@ -18,10 +18,11 @@ cargo build --release
 BIND=127.0.0.1:5764 DB_PATH=/var/lib/study-library/accounts.db ./target/release/study-library-server
 ```
 
-Or with Docker (listens on the host's `127.0.0.1:5764`, data in a named volume):
+Or with Docker, which includes Caddy with automatic HTTPS certificates:
 
 ```sh
 cp server.env.example server.env    # fill in SMTP_* / GOOGLE_*
+cp .env.example .env                # set DOMAIN
 docker compose up -d --build
 ```
 
@@ -80,7 +81,7 @@ How sync works:
 - A device sends what changed since its last sync and receives every item changed after its last `seq`.
 - Passwords are stored as Argon2 hashes. Session tokens and codes are stored only as SHA-256 hashes.
 - A code expires after 15 minutes or 5 wrong tries. A new one can be requested once a minute.
-- Sign-in, sign-up, code and password-reset requests are limited to 30 per 10 minutes per client address. The address is taken from `X-Forwarded-For`, so keep the server behind the proxy.
+- Sign-in, sign-up, code and password-reset requests are limited to 30 per 10 minutes per client address. Behind a proxy on the same machine (or the Caddy container) the address comes from `X-Forwarded-For`; otherwise it is the connection's own address.
 
 ## Not done yet
 

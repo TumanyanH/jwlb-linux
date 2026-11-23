@@ -12,10 +12,32 @@ services:
       BIND: 0.0.0.0:5764
       DB_PATH: /data/accounts.db
     ports:
-      # Only reachable from the VPS itself; Caddy on the host proxies HTTPS to it
+      # Plain HTTP, only reachable from the VPS itself (for curl checks). The public way in is Caddy below.
       - "127.0.0.1:5764:5764"
     volumes:
       - study-library-data:/data
 
+  # HTTPS in front of the server. Caddy gets the certificate from Let's Encrypt on first start
+  # and renews it by itself; the certificates live in the caddy-data volume.
+  caddy:
+    image: caddy:2.10.2-alpine
+    container_name: study-library-caddy
+    restart: unless-stopped
+    depends_on:
+      - study-library-server
+    environment:
+      # Set DOMAIN in the .env file next to this one (see .env.example)
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    ports:
+      - "80:80"        # needed for the Let's Encrypt check and the redirect to HTTPS
+      - "443:443"
+      - "443:443/udp"  # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
 volumes:
   study-library-data:
+  caddy-data:
+  caddy-config:

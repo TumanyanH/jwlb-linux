@@ -9,7 +9,8 @@
 //!   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 //!                         an OAuth client of type "Desktop app"; Google sign-in is off when unset
 
-use axum::extract::{DefaultBodyLimit, State};
+use axum::extract::{ConnectInfo, DefaultBodyLimit, State};
+use std::net::{IpAddr, SocketAddr};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
@@ -47,15 +48,32 @@ const AUTH_WINDOW_SECS: i64 = 10 * 60;
 const AUTH_MAX_PER_WINDOW: u32 = 30;
 
 /// Limit sign-in, sign-up, code and password-reset requests per client address, which slows
-/// down password guessing. The address comes from X-Forwarded-For (set by the reverse proxy;
-/// the server itself only listens on 127.0.0.1).
-fn rate_limit(st: &AppState, headers: &HeaderMap) -> Result<(), ApiError> {
-    let ip = headers
-        .get("x-forwarded-for")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.split(',').next())
-        .map(|v| v.trim().to_string())
-        .unwrap_or_else(|| "direct".into());
+/// down password guessing. When the connection comes from a private or loopback address (the
+/// Caddy container, or a proxy on the same machine) the client address is taken from the
+/// X-Forwarded-For entry that proxy added; otherwise the connection's own address is used, so a
+/// client talking to the server directly cannot fake it.
+fn client_ip(peer: SocketAddr, headers: &HeaderMap) -> String {
+    let p = peer.ip().to_canonical();
+    let behind_proxy = match p {
+        IpAddr::V4(v4) => v4.is_loopback() || v4.is_private(),
+        IpAddr::V6(v6) => v6.is_loopback() || v6.is_unique_local(),
+    };
+    if behind_proxy {
+        let fwd = headers
+            .get("x-forwarded-for")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.rsplit(',').next())
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
+        if let Some(ip) = fwd {
+            return ip;
+        }
+    }
+    p.to_string()
+}
+
+fn rate_limit(st: &AppState, peer: SocketAddr, headers: &HeaderMap) -> Result<(), ApiError> {
+    let ip = client_ip(peer, headers);
     let mut m = st.limits.lock().unwrap();
     let t = now();
     if m.len() > 50_000 {
@@ -293,8 +311,8 @@ async fn config(State(st): State<Shared>) -> Json<Value> {
     Json(json!({ "google_client_id": st.cfg.google_id, "version": 1 }))
 }
 
-async fn signup(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<Credentials>) -> ApiResult<Value> {
-    rate_limit(&st, &headers)?;
+async fn signup(State(st): State<Shared>, ConnectInfo(peer): ConnectInfo<SocketAddr>, headers: HeaderMap, Json(r): Json<Credentials>) -> ApiResult<Value> {
+    rate_limit(&st, peer, &headers)?;
     let email = normalize_email(&r.email)?;
     check_password(&r.password)?;
     let hash = hash_password(&r.password)?;
@@ -320,8 +338,8 @@ async fn signup(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<Cred
     }
 }
 
-async fn resend(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<EmailOnly>) -> ApiResult<Value> {
-    rate_limit(&st, &headers)?;
+async fn resend(State(st): State<Shared>, ConnectInfo(peer): ConnectInfo<SocketAddr>, headers: HeaderMap, Json(r): Json<EmailOnly>) -> ApiResult<Value> {
+    rate_limit(&st, peer, &headers)?;
     let email = normalize_email(&r.email)?;
     let unverified = {
         let db = st.db.lock().unwrap();
@@ -333,8 +351,8 @@ async fn resend(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<Emai
     Ok(Json(json!({ "ok": true })))
 }
 
-async fn verify(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<CodeReq>) -> ApiResult<SessionOut> {
-    rate_limit(&st, &headers)?;
+async fn verify(State(st): State<Shared>, ConnectInfo(peer): ConnectInfo<SocketAddr>, headers: HeaderMap, Json(r): Json<CodeReq>) -> ApiResult<SessionOut> {
+    rate_limit(&st, peer, &headers)?;
     let email = normalize_email(&r.email)?;
     let db = st.db.lock().unwrap();
     take_code(&db, &email, "verify", &r.code)?;
@@ -343,8 +361,8 @@ async fn verify(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<Code
     Ok(Json(new_session(&db, id, &r.device)?))
 }
 
-async fn login(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<Credentials>) -> Result<Json<SessionOut>, ApiError> {
-    rate_limit(&st, &headers)?;
+async fn login(State(st): State<Shared>, ConnectInfo(peer): ConnectInfo<SocketAddr>, headers: HeaderMap, Json(r): Json<Credentials>) -> Result<Json<SessionOut>, ApiError> {
+    rate_limit(&st, peer, &headers)?;
     let email = normalize_email(&r.email)?;
     let wrong = || ApiError(StatusCode::UNAUTHORIZED, "Wrong email or password.".into(), "bad_login");
     let row: Option<(i64, Option<String>, bool)> = {
@@ -369,8 +387,8 @@ async fn login(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<Crede
     Ok(Json(new_session(&db, id, &r.device)?))
 }
 
-async fn forgot(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<EmailOnly>) -> ApiResult<Value> {
-    rate_limit(&st, &headers)?;
+async fn forgot(State(st): State<Shared>, ConnectInfo(peer): ConnectInfo<SocketAddr>, headers: HeaderMap, Json(r): Json<EmailOnly>) -> ApiResult<Value> {
+    rate_limit(&st, peer, &headers)?;
     let email = normalize_email(&r.email)?;
     let exists = {
         let db = st.db.lock().unwrap();
@@ -386,8 +404,8 @@ async fn forgot(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<Emai
     Ok(Json(json!({ "ok": true })))
 }
 
-async fn reset(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<CodeReq>) -> ApiResult<SessionOut> {
-    rate_limit(&st, &headers)?;
+async fn reset(State(st): State<Shared>, ConnectInfo(peer): ConnectInfo<SocketAddr>, headers: HeaderMap, Json(r): Json<CodeReq>) -> ApiResult<SessionOut> {
+    rate_limit(&st, peer, &headers)?;
     let email = normalize_email(&r.email)?;
     check_password(&r.password)?;
     let hash = hash_password(&r.password)?;
@@ -411,8 +429,8 @@ struct GoogleReq {
     device: String,
 }
 
-async fn google(State(st): State<Shared>, headers: HeaderMap, Json(r): Json<GoogleReq>) -> ApiResult<SessionOut> {
-    rate_limit(&st, &headers)?;
+async fn google(State(st): State<Shared>, ConnectInfo(peer): ConnectInfo<SocketAddr>, headers: HeaderMap, Json(r): Json<GoogleReq>) -> ApiResult<SessionOut> {
+    rate_limit(&st, peer, &headers)?;
     let (Some(id), Some(secret)) = (&st.cfg.google_id, &st.cfg.google_secret) else {
         return Err(ApiError(StatusCode::NOT_IMPLEMENTED, "Google sign-in isn't set up on this server.".into(), "unavailable"));
     };
@@ -638,5 +656,5 @@ async fn main() {
     let bind = env("BIND").unwrap_or_else(|| "127.0.0.1:5764".into());
     let listener = tokio::net::TcpListener::bind(&bind).await.expect("cannot listen on BIND");
     eprintln!("Study Library account server listening on http://{bind}");
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap();
 }

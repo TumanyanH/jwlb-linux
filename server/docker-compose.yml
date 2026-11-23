@@ -1,0 +1,21 @@
+name: study-library-server
+
+services:
+  study-library-server:
+    build: .
+    image: study-library-server
+    container_name: study-library-server
+    restart: unless-stopped
+    # SMTP_* and GOOGLE_* settings; see server.env.example
+    env_file: server.env
+    environment:
+      BIND: 0.0.0.0:5764
+      DB_PATH: /data/accounts.db
+    ports:
+      # Only reachable from the VPS itself; Caddy on the host proxies HTTPS to it
+      - "127.0.0.1:5764:5764"
+    volumes:
+      - study-library-data:/data
+
+volumes:
+  study-library-data:

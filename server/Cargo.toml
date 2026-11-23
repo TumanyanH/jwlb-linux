@@ -1,0 +1,19 @@
+[package]
+name = "study-library-server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+argon2 = "0.5"
+axum = "0.8"
+base64 = "0.22"
+chrono = "0.4.45"
+hex = "0.4.3"
+lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "builder", "tokio1-rustls-tls", "hostname"] }
+rand = "0.8"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rusqlite = { version = "0.43.0", features = ["bundled"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sha2 = "0.10"
+tokio = { version = "1.54.1", features = ["full"] }
